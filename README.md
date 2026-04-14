@@ -11,23 +11,51 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+This project is a simplified version of how real music apps figure out what to play next. I built a scoring system that looks at a user's taste profile and compares it against a small catalog of songs, giving each song a score based on how well it matches. The top-scoring songs are what get recommended.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+Real-world recommenders like Spotify or YouTube use two main strategies: collaborative filtering (looking at what similar users listened to) and content-based filtering (looking at the actual features of a song like its tempo or mood). My version focuses on content-based filtering because it's more transparent — you can actually explain *why* a song got recommended instead of just saying "other people liked it." The system prioritizes mood and energy above everything else, because those feel like the most immediate signals for what someone actually wants to hear in a given moment. Genre matters too, but I weighted it slightly lower since people often cross genres depending on their vibe.
 
-Some prompts to answer:
+### Song Features
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+Each `Song` in the catalog stores:
 
-You can include a simple diagram or bullet list if helpful.
+- `genre` — the musical category (e.g. lofi, pop, rock, ambient, jazz, synthwave, indie pop)
+- `mood` — the emotional tone (e.g. chill, happy, intense, focused, relaxed, moody)
+- `energy` — a 0.0 to 1.0 score for how high-energy the track feels
+- `tempo_bpm` — beats per minute
+- `valence` — a 0.0 to 1.0 score for how positive or upbeat the song sounds
+- `danceability` — a 0.0 to 1.0 score for how easy it is to dance to
+- `acousticness` — a 0.0 to 1.0 score for how acoustic vs. electronic the song is
+
+### UserProfile Features
+
+Each `UserProfile` stores:
+
+- `favorite_genre` — the genre they tend to gravitate toward
+- `favorite_mood` — the mood they're looking for right now
+- `target_energy` — the energy level they want (0.0 to 1.0)
+- `likes_acoustic` — a true/false flag for whether they prefer acoustic over electronic sounds
+
+### How Scoring Works
+
+For each song, the system calculates a score out of 1.0:
+
+- Mood match → worth **0.35** (highest weight — most immediate signal)
+- Energy proximity → worth **0.30** (uses `1 - |song.energy - user.target_energy|` so closer = higher score)
+- Genre match → worth **0.25** (strong identity signal but not the whole picture)
+- Acoustic preference → worth **0.10** (tiebreaker based on the `likes_acoustic` flag)
+
+All songs get scored, then sorted highest to lowest. The top `k` results (default 5) are returned as the recommendations.
+
+---
+
+## Sample Output
+
+![Terminal output showing recommendations](terminal_output.png)
 
 ---
 
